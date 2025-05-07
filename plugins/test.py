@@ -4,7 +4,6 @@ from airflow.operators.python_operator import PythonOperator
 from plugins.get_pannes_data import main as get_pannes_data
 from datetime import timedelta
 
-
 args = {
     'owner': 'airflow',
     'start_date': days_ago(1)

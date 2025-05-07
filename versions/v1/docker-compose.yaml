@@ -1,10 +1,7 @@
 version: '3'
 x-airflow-common:
   &airflow-common
-  image: airflow-hq:dev
-  build:
-    context: .
-    dockerfile: Dockerfile
+  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.8.2-python3.10}
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
