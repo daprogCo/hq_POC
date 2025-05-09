@@ -1,5 +1,4 @@
-FROM apache/airflow:2.8.2-python3.10
-
+FROM apache/airflow:2.9.0-python3.12
 # Installer Java + dépendances pour Spark
 USER root
 RUN apt-get update && \
@@ -29,7 +28,6 @@ USER airflow
 
 # Installer les requirements Airflow (hors pyspark ici)
 COPY requirements.txt /requirements.txt
-RUN pip install --no-cache-dir --user -r /requirements.txt
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r /requirements.txt
 
-# S'assurer que ~/.local/bin est bien dans le PATH
-ENV PATH="/home/airflow/.local/bin:${PATH}"
