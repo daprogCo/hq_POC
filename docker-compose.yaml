@@ -109,6 +109,15 @@ services:
     depends_on:
       - spark-master
     restart: always
+    
+  init-db:
+    <<: *airflow-common
+    command: >
+      bash -c "sleep 10 && python /opt/airflow/init_db.py"
+    volumes:
+      - ./python-scripts/init_db.py:/opt/airflow/init_db.py
+    depends_on:
+      - postgres
 
 volumes:
   postgres-db-volume:
