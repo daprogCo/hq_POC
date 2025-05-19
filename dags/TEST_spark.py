@@ -17,7 +17,7 @@ with DAG(
 
     spark_task = SparkSubmitOperator(
         task_id="run_hello_spark",
-        application="/opt/airflow/dags/scripts/hello_spark.py",
+        application="/opt/airflow/scripts/spark_jobs/hello_spark.py",
         conn_id="spark_default",
         spark_binary="/opt/spark/bin/spark-submit",
         verbose=True,

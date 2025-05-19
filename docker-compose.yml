@@ -7,11 +7,12 @@ x-airflow-common:
     dockerfile: Dockerfile
   environment:
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    PYTHONPATH: /opt/airflow/scripts
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
-    - ./spark-scripts:/opt/airflow/dags/scripts
+    - ./scripts:/opt/airflow/scripts
     - ./airflow.cfg:/opt/airflow/airflow.cfg
   user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-50000}"
   depends_on:
@@ -113,9 +114,7 @@ services:
   init-db:
     <<: *airflow-common
     command: >
-      bash -c "sleep 10 && python /opt/airflow/init_db.py"
-    volumes:
-      - ./python-scripts/init_db.py:/opt/airflow/init_db.py
+      bash -c "sleep 10 && python /opt/airflow/scripts/init_db.py"
     depends_on:
       - postgres
 

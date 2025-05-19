@@ -22,7 +22,4 @@ def main():
         url = set_url(HQ_API_URL_PANNES, timestamp)
         pannes_data = fetch_data(url, "Erreur pannes")
         if pannes_data:
-            return pannes_data        
-
-if __name__ == "__main__":
-    print(main())
+            return pannes_data

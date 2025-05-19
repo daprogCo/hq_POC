@@ -32,6 +32,7 @@ def main(latitude, longitude):
     geoposition_data = fetch_data(url, GEOPOSITION_ERR_MSG)
     if geoposition_data:
         location_key = get_location_key(geoposition_data)
+        print(f"Localisation trouvée : {location_key[0]} (Key: {location_key[1]})")
         if location_key:
             historical_url = set_historical_url(API_KEY, location_key[1])
             historical_data = fetch_data(historical_url, HISTORICAL_ERR_MSG)
