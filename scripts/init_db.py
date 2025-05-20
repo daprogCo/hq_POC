@@ -60,7 +60,8 @@ TABLES = {
             longitude NUMERIC(16,14),
             debut TIMESTAMP,
             fin TIMESTAMP,
-            meteo24h JSONB
+            meteo24h JSONB,
+            UNIQUE (latitude, longitude, debut)
         );
     """,
     "statuts": """
