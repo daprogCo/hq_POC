@@ -56,10 +56,10 @@ def list_ongoing(cursor):
     """)
     return cursor.fetchall()
 
-def insert_data(conn, cursor, data, ongoing):
+def insert_data(conn, cursor, data):
     insert_ville(cursor, data)
     conn.commit()
-    id_panne = set_panne(cursor, data, ongoing)
+    id_panne = set_panne(cursor, data)
     conn.commit()
     insert_statut(cursor, data, id_panne)
     conn.commit()
@@ -93,12 +93,14 @@ def check_ongoing(panne, ongoing):
 
 def get_panne_id(cursor, panne):
     cursor.execute("""
-        SELECT id FROM pannes WHERE latitude = %s AND longitude = %s and fin IS NULL
-    """, (panne['latitude'], panne['longitude']))
+        SELECT id FROM pannes
+        WHERE
+            ABS(latitude - %s) < 1e-8
+            AND ABS(longitude - %s) < 1e-8
+            AND debut = %s
+    """, (panne['latitude'], panne['longitude'], panne['debut']))
     result = cursor.fetchone()
-    if result:
-        return result[0]
-    return None
+    return result[0] if result else None
 
 def insert_panne(cursor, panne):
     code_hq = panne['code_hq']
@@ -118,15 +120,10 @@ def insert_panne(cursor, panne):
         ON CONFLICT (latitude, longitude, debut) DO NOTHING
     """, (result[0], panne['latitude'], panne['longitude'], panne['debut']))
 
-def set_panne(cursor, entries, ongoing):
+def set_panne(cursor, entries):
     panne = entries['pannes']
-    id_panne = check_ongoing(panne, ongoing)
-    if id_panne:
-        ongoing[:] = [p for p in ongoing if p[0] != id_panne]
-        return id_panne
-    else:
-        insert_panne(cursor, panne) 
-        return get_panne_id(cursor, panne)  
+    insert_panne(cursor, panne) 
+    return get_panne_id(cursor, panne)  
 
 def insert_statut(cursor, entries, id_panne):
     statut = entries['statuts']
@@ -144,10 +141,8 @@ def main(data):
     if conn is None:
         return
     cursor = conn.cursor()
-    ongoing = list_ongoing(cursor)
     for panne in pannes:
         entries = get_entries(panne)
-        insert_data(conn, cursor, entries, ongoing)
+        insert_data(conn, cursor, entries)
     cursor.close()
     conn.close()
-    return ongoing

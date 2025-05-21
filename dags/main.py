@@ -1,7 +1,6 @@
 from fetch_hq_data import main as fetch_hq_data_main
 from copy_data_to_psql import main as copy_data_to_psql_main
 
-
 from airflow.models import DAG
 from airflow.utils.dates import days_ago
 from airflow.operators.python import PythonOperator
@@ -25,7 +24,7 @@ def task_fetch(**context):
 def task_copy(**context):
     ti = context['ti']
     data = ti.xcom_pull(task_ids='fetch_hq_task')
-    return copy_data_to_psql_main(data)
+    copy_data_to_psql_main(data)
     
 
 with dag:
