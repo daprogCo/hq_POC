@@ -1,5 +1,7 @@
 from fetch_hq_data import main as fetch_hq_data_main
 from copy_data_to_psql import main as copy_data_to_psql_main
+from end_pannes import main as end_main
+
 
 from airflow.models import DAG
 from airflow.utils.dates import days_ago
@@ -18,13 +20,19 @@ dag = DAG(
     catchup=False
 )
 
-def task_fetch(**context):
+def task_fetch():
     return fetch_hq_data_main()
 
 def task_copy(**context):
     ti = context['ti']
     data = ti.xcom_pull(task_ids='fetch_hq_task')
-    copy_data_to_psql_main(data)
+    return copy_data_to_psql_main(data)
+
+def task_end(**context):
+    ti = context['ti']
+    data = ti.xcom_pull(task_ids='copy_data_task')
+    return end_main(data)
+
     
 
 with dag:
@@ -38,4 +46,9 @@ with dag:
         python_callable=task_copy
     )
 
-    fetch_hq >> copy_to_psql
+    end_pannes = PythonOperator(
+        task_id='end_pannes_task',
+        python_callable=task_end
+    )
+    
+    fetch_hq >> copy_to_psql >> end_pannes

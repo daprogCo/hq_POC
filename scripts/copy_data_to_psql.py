@@ -1,25 +1,12 @@
-import psycopg2
 import ast
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
-DB_NAME = "hq_warehouse"
-DB_USER = "airflow"
-DB_PASSWORD = "airflow"
-DB_HOST = "postgres"
-DB_PORT = "5432"
+from connect_db import connect_db
 
-def connect_db():
-    try:
-        conn = psycopg2.connect(
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            host=DB_HOST,
-            port=DB_PORT
-        )
-        return conn
-    except Exception as e:
-        print(f"Error connecting to database: {e}")
-        return None
+def get_current_timestamp():
+    now_est = datetime.now(ZoneInfo("America/Toronto"))
+    return now_est.strftime("%Y-%m-%d %H:%M:%S")
 
 def get_pannes(data):
     pannes = data.get("pannes", [])
@@ -56,14 +43,13 @@ def list_ongoing(cursor):
     """)
     return cursor.fetchall()
 
-def insert_data(conn, cursor, data):
+def insert_data(conn, cursor, data, timestamp):
     insert_ville(cursor, data)
     conn.commit()
     id_panne = set_panne(cursor, data)
     conn.commit()
-    insert_statut(cursor, data, id_panne)
+    insert_statut(cursor, data, id_panne, timestamp)
     conn.commit()
-
 
 def insert_ville(cursor, entries):
     ville = entries['villes']
@@ -125,14 +111,15 @@ def set_panne(cursor, entries):
     insert_panne(cursor, panne) 
     return get_panne_id(cursor, panne)  
 
-def insert_statut(cursor, entries, id_panne):
+def insert_statut(cursor, entries, id_panne, timestamp):
     statut = entries['statuts']
     cursor.execute("""
-        INSERT INTO statuts (statut, evaluation, cause, nb_clients, id_panne)
-        VALUES (%s, %s, %s, %s, %s)
-    """, (statut['statut'], statut['evaluation'], statut['cause'], statut['nb_clients'], id_panne))
+        INSERT INTO statuts (statut, evaluation, cause, nb_clients, id_panne, timestamp)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """, (statut['statut'], statut['evaluation'], statut['cause'], statut['nb_clients'], id_panne, timestamp))
 
 def main(data):
+    timestamp = get_current_timestamp()
     pannes = get_pannes(data)
     if not pannes:
         print("No data to process.")
@@ -143,6 +130,7 @@ def main(data):
     cursor = conn.cursor()
     for panne in pannes:
         entries = get_entries(panne)
-        insert_data(conn, cursor, entries)
+        insert_data(conn, cursor, entries, timestamp)
     cursor.close()
     conn.close()
+    return timestamp

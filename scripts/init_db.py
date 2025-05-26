@@ -71,7 +71,8 @@ TABLES = {
             statut VARCHAR(1),
             evaluation TIMESTAMP,
             cause VARCHAR(2),
-            nb_clients INTEGER
+            nb_clients INTEGER,
+            timestamp TIMESTAMP
         );
     """
 }

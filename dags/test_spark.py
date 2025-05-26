@@ -10,16 +10,15 @@ default_args = {
 with DAG(
     dag_id="test_spark",
     default_args=default_args,
-    schedule=None,  # Airflow >= 2.9 uses 'schedule' instead of 'schedule_interval'
+    schedule=None,
     catchup=False,
     tags=["spark", "test"],
 ) as dag:
 
     spark_task = SparkSubmitOperator(
         task_id="run_hello_spark",
-        application="/opt/airflow/scripts/spark_jobs/hello_spark.py",
+        application="/opt/airflow/scripts/hello_spark.py",
         conn_id="spark_default",
-        spark_binary="/opt/spark/bin/spark-submit",
         verbose=True,
         conf={"spark.master": "spark://spark-master:7077"},
         deploy_mode="client"
