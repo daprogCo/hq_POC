@@ -43,8 +43,8 @@ def main(latitude, longitude):
 
 if __name__ == "__main__":
     # Example coordinates for Saint-Constant, QC
-    latitude = 45.35
-    longitude = -73.64
+    latitude = 45.48
+    longitude = -73.47
     historical_data = main(latitude, longitude)
     if historical_data:
         print(historical_data)
