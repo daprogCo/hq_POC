@@ -1,5 +1,7 @@
 import requests
 from connect_db import connect_db
+import psycopg2
+from psycopg2.extras import Json
 
 ACCUWEATHER_GEOPOSITION_URL = 'http://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey={apikey}&q={latitude}%2C{longitude}'
 ACCUWEATHER_24H_HISTORICAL_URL = 'http://dataservice.accuweather.com/currentconditions/v1/{location_key}/historical/24?apikey={apikey}&details=true'
@@ -64,7 +66,7 @@ def moyenne_coord(coordonnees):
     latitude_avg = (max(latitudes) + min(latitudes)) / 2
     longitude_avg = (max(longitudes) + min(longitudes)) / 2
 
-    return latitude_avg, longitude_avg
+    return round(latitude_avg, 2), round(longitude_avg, 2)
 
 def fetch_code_meteo(latitude, longitude):
     url = set_geoposition_url(API_KEY, latitude, longitude)
@@ -106,12 +108,12 @@ def fetch_meteo_data(code_meteo):
         return None
     return json
 
-def update_meteo_data(cursor, id, json):
+def update_meteo_data(cursor, id, data):
     cursor.execute("""
         UPDATE pannes
         SET meteo24h = %s
         WHERE id = %s;
-    """, (json, id))
+    """, (Json(data), id))
     cursor.connection.commit()
 
 def main(data):
@@ -130,6 +132,7 @@ def main(data):
         json = fetch_meteo_data(meteo_code)
         if json:
             update_meteo_data(cursor, id[0], json)
+            print(f"Données météo mises à jour pour la panne ID {id}.")
         else:
             print(f"Aucune donnée météo trouvée pour la panne ID {id}.")
             break
